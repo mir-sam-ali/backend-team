@@ -58,12 +58,8 @@ router.route('/update').get(clubAuth, async (req, res) => {
 // route to update the club details
 router.route('/update/').post(clubAuth, upload.single('logo') ,async (req, res) => {
     const owner = req.user
-    const club = await clubModel.findOne({head: owner})
-    const id = club._id
-    let club_name=req.body.name;
     if (req.file == undefined) {
       var change = {
-        name: club_name,
         description: req.body.description,
         resources:req.body.resources,
         github: req.body.github,
@@ -74,7 +70,6 @@ router.route('/update/').post(clubAuth, upload.single('logo') ,async (req, res) 
       }
     } else {
       var change = {
-        name: club_name,
         description: req.body.description,
         resources:req.body.resources,
         logo_url: req.file.filename,
@@ -85,31 +80,17 @@ router.route('/update/').post(clubAuth, upload.single('logo') ,async (req, res) 
         facebook: req.body.facebook
       }
     }
-    
-    var u_club_name = club_name.toUpperCase()
-    var l_club_name = club_name.toLowerCase()
-    // user_id: l_club_name,
-    // pswd: l_club_name,
-    var changeU={
-      club_name: u_club_name
+    let club;
+    let id;
+    try {
+      club = await clubModel.findOne({head: owner})
+      id = club._id
+      await clubModel.findByIdAndUpdate(id,change)
+      res.redirect(307, '/club_head/profile')
+    } catch (error) {
+      req.flash("error",error.message)
+      return res.redirect('/club_head/profile')
     }
-    clubModel.findByIdAndUpdate(id, change,
-      function(err, result) {
-            if(err){
-                req.flash("error",err.message)
-                return res.redirect('/club_head/profile')
-            } else {
-          clubHeadsModel.findByIdAndUpdate({ _id: result.head },changeU)
-          .then(() => {
-            res.redirect(307, '/club_head/profile')
-          }).catch(err => {
-            if(err){
-              req.flash("error",err.message)
-              return res.redirect('/club_head/profile')
-          }          })          
-        }
-      }
-      );
 })
 
 // route to delete club
