@@ -28,6 +28,7 @@ const editorRouter = require('./routes/editor')
 const challengesRouter = require('./routes/challenges')
 const contributorsRouter = require('./routes/contributors')
 const app = express()
+require('dotenv').config()
 
 const port = process.env.PORT || 5000
 
